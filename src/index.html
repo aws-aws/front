@@ -1,0 +1,118 @@
+ <!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="calc.css" media="screen" />
+<script>
+function c(val){
+  document.getElementById("d").value=val;
+}
+function v(val){
+  document.getElementById("d").value+=val;
+}
+function e(){
+  try{
+    //c(eval(document.getElementById("d").value))
+    sendJSON()
+  }
+  catch(e){
+    console.log(e)
+    c('Error')
+  }
+}
+
+function sendJSON(){
+
+            // Creating a XHR object
+            let xhr = new XMLHttpRequest();
+            const url = "http://localhost:1880/incoming";
+
+            // open a connection
+            xhr.open("POST", url, true);
+
+            // Set the request header i.e. which type of content you are sending
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            // Create a state change callback
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+
+                    // Print received data from server
+                    //result.innerHTML = this.responseText;
+                    console.log(this.responseText);
+                    c(JSON.parse(this.responseText).result)
+
+                }
+            };
+
+
+            const re2 = /\s{1,}/ig;
+            //remove spaces
+            const incoming = (document.getElementById("d").value).replace(re2,'');
+            console.log(document.getElementById("d").value)
+            console.log(document.getElementById("d").value.replace(re2,''))
+            //check for digits, operators and dots only
+            const re = /^(\d|\+|\*|-|\/|\.|\(|\)){0,}$/;
+            const re3 = /(\+|-|\*|\/|\.){2,}/;
+
+            if(!re.exec(incoming)) {console.log(11);throw 'Error';}
+            //check for double operators, dots, wrong combinations
+
+            if(re3.exec(incoming)) {console.log(22);throw 'Error';}
+            let tokensArray = [];
+            let curToken = '';
+            for(let i = 0; i < incoming.length; i++){
+              switch(incoming[i]){
+                case "+": case "-": case "\\": case "*":
+                  tokensArray.push(curToken);
+                  tokensArray.push(incoming[i]);
+                  curToken = '';
+                  break;
+                default: curToken += incoming[i];
+              }
+            }
+            tokensArray.push(curToken);
+
+            let data = JSON.stringify({expr:tokensArray});
+
+            // Sending data with the request
+            xhr.send(data);
+        }
+</script>
+</head>
+<body>
+
+
+<div class="box">
+<div class="display"><input type="text" readonly size="18" id="d"></div>
+<div class="keys">
+    <p><input type="button" class="button gray" value="mrc" onclick='c("Created....................")'>
+    <input type="button" class="button gray"  value="m-" onclick='c("...............by............")'>
+    <input type="button" class="button gray" value="m+" onclick='c(".....................Me")'>
+    <input type="button" class="button pink" value="/" onclick='v("/")'></p>
+    <p>
+    <input type="button" class="button black" value="7" onclick='v("7")'>
+    <input type="button"     class="button black" value="8" onclick='v("8")'>
+    <input type="button" class="button black" value="9" onclick='v("9")'>
+    <input type="button" class="button pink" value="*" onclick='v("*")'></p>
+    <p>
+    <input type="button" class="button black" value="4" onclick='v("4")'>
+    <input type="button" class="button black" value="5" onclick='v("5")'>
+    <input type="button" class="button black" value="6" onclick='v("6")'>
+    <input type="button" class="button pink" value="-" onclick='v("-")'></p>
+    <p>
+    <input type="button" class="button black" value="1" onclick='v("1")'>
+    <input type="button"  class="button black" value="2" onclick='v("2")'>
+    <input type="button" class="button black" value="3" onclick='v("3")'>
+    <input type="button"     class="button pink" value="+" onclick='v("+")'></p>
+    <p>
+    <input type="button" class="button black" value="0" onclick='v("0")'>
+    <input type="button" class="button black" value="." onclick='v(".")'>
+    <input type="button" class="button black" value="C" onclick='c("")'>
+    <input type="button" class="button orange" value="=" onclick='e()'></p>
+</div>
+</div>
+
+
+
+</body>
+</html>
